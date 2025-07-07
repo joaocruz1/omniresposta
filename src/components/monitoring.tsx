@@ -83,127 +83,124 @@ export function Monitoring() {
     { dia: "Sab", uptime: 99.8 },
     { dia: "Dom", uptime: 99.9 },
   ]
-
+  
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "Online":
-        return <CheckCircle className="w-5 h-5 text-green-600" />
+        return <CheckCircle className="w-5 h-5 text-green-400" />
       case "Degradado":
-        return <AlertTriangle className="w-5 h-5 text-yellow-600" />
+        return <AlertTriangle className="w-5 h-5 text-yellow-400" />
       case "Offline":
-        return <AlertTriangle className="w-5 h-5 text-red-600" />
+        return <AlertTriangle className="w-5 h-5 text-red-400" />
       default:
-        return <Clock className="w-5 h-5 text-gray-600" />
+        return <Clock className="w-5 h-5 text-gray-400" />
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Online":
-        return "bg-green-100 text-green-800"
+        return "bg-green-500/10 text-green-400 border border-green-500/20"
       case "Degradado":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
       case "Offline":
-        return "bg-red-100 text-red-800"
+        return "bg-red-500/10 text-red-400 border border-red-500/20"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-500/10 text-gray-400 border border-gray-500/20"
     }
   }
 
   const getAlertIcon = (type: string) => {
     switch (type) {
       case "error":
-        return <AlertTriangle className="w-5 h-5 text-red-600" />
+        return <div className="p-2 rounded-full bg-red-500/10"><AlertTriangle className="w-5 h-5 text-red-400" /></div>
       case "warning":
-        return <AlertTriangle className="w-5 h-5 text-yellow-600" />
+        return <div className="p-2 rounded-full bg-yellow-500/10"><AlertTriangle className="w-5 h-5 text-yellow-400" /></div>
       case "success":
-        return <CheckCircle className="w-5 h-5 text-green-600" />
+        return <div className="p-2 rounded-full bg-green-500/10"><CheckCircle className="w-5 h-5 text-green-400" /></div>
       default:
-        return <Activity className="w-5 h-5 text-blue-600" />
+        return <div className="p-2 rounded-full bg-blue-500/10"><Activity className="w-5 h-5 text-blue-400" /></div>
     }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Monitoramento do Sistema</h2>
-          <p className="text-gray-600">Status em tempo real dos serviços OmniResposta</p>
+          <h2 className="text-3xl font-bold text-white">Monitoramento do Sistema</h2>
+          <p className="text-purple-200">Status em tempo real dos serviços OmniResposta</p>
         </div>
-        <Button variant="outline">
+        <Button variant="outline" className="text-purple-200 border-purple-500/30 hover:bg-purple-500/10 hover:text-white">
           <RefreshCw className="w-4 h-4 mr-2" />
           Atualizar
         </Button>
       </div>
 
-      {/* System Overview */}
+      {/* Visão Geral do Sistema */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
+        <Card className="glass-card-dark border-green-500/20">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Status Geral</p>
-                <p className="text-2xl font-bold text-green-600">Operacional</p>
+                <p className="text-sm font-medium text-purple-200">Status Geral</p>
+                <p className="text-2xl font-bold text-green-400">Operacional</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <CheckCircle className="w-8 h-8 text-green-400" />
             </div>
           </CardContent>
         </Card>
-
-        <Card>
+        <Card className="glass-card-dark border-purple-500/20">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Uptime</p>
-                <p className="text-2xl font-bold text-[#662d91]">99.8%</p>
+                <p className="text-sm font-medium text-purple-200">Uptime</p>
+                <p className="text-2xl font-bold text-white">99.8%</p>
               </div>
-              <Activity className="w-8 h-8 text-[#662d91]" />
+              <Activity className="w-8 h-8 text-purple-300" />
             </div>
           </CardContent>
         </Card>
-
-        <Card>
+        <Card className="glass-card-dark border-purple-500/20">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Resp. Média</p>
-                <p className="text-2xl font-bold text-[#662d91]">76ms</p>
+                <p className="text-sm font-medium text-purple-200">Resp. Média</p>
+                <p className="text-2xl font-bold text-white">76ms</p>
               </div>
-              <Server className="w-8 h-8 text-[#662d91]" />
+              <Server className="w-8 h-8 text-purple-300" />
             </div>
           </CardContent>
         </Card>
-
-        <Card>
+        <Card className="glass-card-dark border-yellow-500/20">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Alertas Ativos</p>
-                <p className="text-2xl font-bold text-yellow-600">2</p>
+                <p className="text-sm font-medium text-purple-200">Alertas Ativos</p>
+                <p className="text-2xl font-bold text-yellow-400">2</p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-yellow-600" />
+              <AlertTriangle className="w-8 h-8 text-yellow-400" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Real-time Performance */}
-      <Card>
+      {/* Performance em Tempo Real */}
+      <Card className="glass-card-dark border-purple-500/20 glow-hover">
         <CardHeader>
-          <CardTitle>Performance em Tempo Real</CardTitle>
+          <CardTitle className="text-white">Performance em Tempo Real</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={realTimeData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" />
-                <YAxis />
-                <Tooltip />
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="time" stroke="#9ca3af" />
+                <YAxis stroke="#9ca3af" />
+                <Tooltip contentStyle={{ backgroundColor: "rgba(17, 24, 39, 0.8)", border: "1px solid #4a0e78", borderRadius: "12px", backdropFilter: "blur(10px)" }} />
                 <Legend />
-                <Line type="monotone" dataKey="cpu" stroke="#662d91" strokeWidth={2} name="CPU (%)" />
-                <Line type="monotone" dataKey="memoria" stroke="#10b981" strokeWidth={2} name="Memória (%)" />
-                <Line type="monotone" dataKey="rede" stroke="#f59e0b" strokeWidth={2} name="Rede (MB/s)" />
+                <Line type="monotone" dataKey="cpu" stroke="var(--chart-1)" strokeWidth={2} name="CPU (%)" />
+                <Line type="monotone" dataKey="memoria" stroke="var(--chart-2)" strokeWidth={2} name="Memória (%)" />
+                <Line type="monotone" dataKey="rede" stroke="var(--chart-3)" strokeWidth={2} name="Rede (MB/s)" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -211,20 +208,20 @@ export function Monitoring() {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Response Time */}
-        <Card>
+        {/* Tempo de Resposta */}
+        <Card className="glass-card-dark border-purple-500/20 glow-hover">
           <CardHeader>
-            <CardTitle>Tempo de Resposta por Serviço</CardTitle>
+            <CardTitle className="text-white">Tempo de Resposta por Serviço</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={responseTimeData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="service" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="tempo" fill="#662d91" name="Tempo (ms)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="service" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip contentStyle={{ backgroundColor: "rgba(17, 24, 39, 0.8)", border: "1px solid #4a0e78", borderRadius: "12px", backdropFilter: "blur(10px)" }} />
+                  <Bar dataKey="tempo" fill="url(#barGradient)" name="Tempo (ms)" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -232,26 +229,19 @@ export function Monitoring() {
         </Card>
 
         {/* Uptime Semanal */}
-        <Card>
+        <Card className="glass-card-dark border-purple-500/20 glow-hover">
           <CardHeader>
-            <CardTitle>Uptime Semanal</CardTitle>
+            <CardTitle className="text-white">Uptime Semanal</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={uptimeData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="dia" />
-                  <YAxis domain={[99, 100]} />
-                  <Tooltip />
-                  <Area
-                    type="monotone"
-                    dataKey="uptime"
-                    stroke="#10b981"
-                    fill="#10b981"
-                    fillOpacity={0.6}
-                    name="Uptime (%)"
-                  />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="dia" stroke="#9ca3af" />
+                  <YAxis domain={[98, 100]} stroke="#9ca3af" />
+                  <Tooltip contentStyle={{ backgroundColor: "rgba(17, 24, 39, 0.8)", border: "1px solid #4a0e78", borderRadius: "12px", backdropFilter: "blur(10px)" }} />
+                  <Area type="monotone" dataKey="uptime" stroke="var(--chart-2)" fill="url(#resolvidas)" name="Uptime (%)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -259,27 +249,26 @@ export function Monitoring() {
         </Card>
       </div>
 
-      {/* Service Status */}
-      <Card>
+      {/* Status dos Serviços */}
+      <Card className="glass-card-dark border-purple-500/20">
         <CardHeader>
-          <CardTitle>Status dos Serviços</CardTitle>
+          <CardTitle className="text-white">Status dos Serviços</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {systemStatus.map((service, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+              <div key={index} className="flex items-center justify-between p-4 bg-purple-500/5 border border-purple-500/10 rounded-lg hover:bg-purple-500/10 transition-colors">
                 <div className="flex items-center gap-4">
                   {getStatusIcon(service.status)}
                   <div>
-                    <h4 className="font-medium text-gray-900">{service.service}</h4>
-                    <p className="text-sm text-gray-500">Uptime: {service.uptime}</p>
+                    <h4 className="font-medium text-white">{service.service}</h4>
+                    <p className="text-sm text-purple-300">Uptime: {service.uptime}</p>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">{service.response}</p>
-                    <p className="text-xs text-gray-500">Tempo de resposta</p>
+                    <p className="text-sm font-medium text-white">{service.response}</p>
+                    <p className="text-xs text-purple-300">Tempo de resposta</p>
                   </div>
                   <Badge className={getStatusColor(service.status)}>{service.status}</Badge>
                 </div>
@@ -289,95 +278,93 @@ export function Monitoring() {
         </CardContent>
       </Card>
 
-      {/* Alerts */}
-      <Card>
+      {/* Alertas */}
+      <Card className="glass-card-dark border-purple-500/20">
         <CardHeader>
-          <CardTitle>Alertas e Notificações</CardTitle>
+          <CardTitle className="text-white">Alertas e Notificações</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {alerts.map((alert) => (
-              <div key={alert.id} className="flex items-center gap-4 p-4 border rounded-lg">
+              <div key={alert.id} className="flex items-center gap-4 p-4 bg-purple-500/5 border border-purple-500/10 rounded-lg">
                 {getAlertIcon(alert.type)}
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900">{alert.message}</p>
-                  <p className="text-sm text-gray-500">{alert.time}</p>
+                  <p className="font-medium text-white">{alert.message}</p>
+                  <p className="text-sm text-purple-300">{alert.time}</p>
                 </div>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
-
-      {/* Resource Usage */}
+      
+      {/* Uso de Recursos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="glass-card-dark border-purple-500/20">
           <CardHeader>
-            <CardTitle>Uso de Recursos</CardTitle>
+            <CardTitle className="text-white">Uso de Recursos</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
-                <div className="flex justify-between text-sm mb-2">
+                <div className="flex justify-between text-sm mb-2 text-purple-200">
                   <span>CPU</span>
-                  <span>67%</span>
+                  <span className="text-white font-semibold">67%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-[#662d91] h-2 rounded-full" style={{ width: "67%" }}></div>
+                <div className="w-full bg-purple-500/10 rounded-full h-2.5">
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full" style={{ width: "67%" }}></div>
                 </div>
               </div>
 
               <div>
-                <div className="flex justify-between text-sm mb-2">
+                <div className="flex justify-between text-sm mb-2 text-purple-200">
                   <span>Memória</span>
-                  <span>45%</span>
+                  <span className="text-white font-semibold">45%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-[#662d91] h-2 rounded-full" style={{ width: "45%" }}></div>
+                <div className="w-full bg-purple-500/10 rounded-full h-2.5">
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2.5 rounded-full" style={{ width: "45%" }}></div>
                 </div>
               </div>
 
               <div>
-                <div className="flex justify-between text-sm mb-2">
+                <div className="flex justify-between text-sm mb-2 text-purple-200">
                   <span>Armazenamento</span>
-                  <span>89%</span>
+                  <span className="text-white font-semibold">89%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-yellow-500 h-2 rounded-full" style={{ width: "89%" }}></div>
+                <div className="w-full bg-purple-500/10 rounded-full h-2.5">
+                  <div className="bg-gradient-to-r from-orange-500 to-yellow-500 h-2.5 rounded-full" style={{ width: "89%" }}></div>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card-dark border-purple-500/20">
           <CardHeader>
-            <CardTitle>Conexões Ativas</CardTitle>
+            <CardTitle className="text-white">Conexões Ativas</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Wifi className="w-5 h-5 text-[#662d91]" />
+                <div className="flex items-center gap-3 text-purple-200">
+                  <Wifi className="w-5 h-5" />
                   <span>WebSocket</span>
                 </div>
-                <span className="font-bold">1,247</span>
+                <span className="font-semibold text-white">1,247</span>
               </div>
-
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Database className="w-5 h-5 text-[#662d91]" />
+                <div className="flex items-center gap-3 text-purple-200">
+                  <Database className="w-5 h-5" />
                   <span>Banco de Dados</span>
                 </div>
-                <span className="font-bold">23</span>
+                <span className="font-semibold text-white">23</span>
               </div>
-
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Server className="w-5 h-5 text-[#662d91]" />
+                <div className="flex items-center gap-3 text-purple-200">
+                  <Server className="w-5 h-5" />
                   <span>API Requests</span>
                 </div>
-                <span className="font-bold">856/min</span>
+                <span className="font-semibold text-white">856/min</span>
               </div>
             </div>
           </CardContent>

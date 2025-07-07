@@ -23,8 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // Adicione a classe "dark" aqui para ativar o tema escuro
-    <html lang="pt-BR" className="root">
+    // A classe "dark" foi adicionada aqui
+    <html lang="pt-BR" className="dark root">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

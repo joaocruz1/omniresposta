@@ -68,52 +68,87 @@ export function DatabaseManager() {
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
+        {/* Card Total de Documentos */}
+        <Card className="glass-card-dark border-purple-500/20 glow-hover relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-5" />
+          <CardContent className="p-6 relative z-10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total de Documentos</p>
-                <p className="text-3xl font-bold text-[#662d91]">1,247</p>
+                <p className="text-sm font-medium text-purple-200">Total de Documentos</p>
+                <p className="text-3xl font-bold text-white mt-1">1,247</p>
               </div>
-              <FileText className="w-8 h-8 text-[#662d91]" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Vetores Gerados</p>
-                <p className="text-3xl font-bold text-[#662d91]">2,636</p>
-              </div>
-              <div className="w-8 h-8 bg-[#662d91] rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">V</span>
+              <div className="p-3 rounded-xl bg-blue-500/10 glass-card">
+                <FileText className="w-8 h-8 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
+        {/* Card Vetores Gerados */}
+        <Card className="glass-card-dark border-purple-500/20 glow-hover relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-5" />
+          <CardContent className="p-6 relative z-10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Processando</p>
-                <p className="text-3xl font-bold text-yellow-600">3</p>
+                <p className="text-sm font-medium text-purple-200">Vetores Gerados</p>
+                <p className="text-3xl font-bold text-white mt-1">2,636</p>
               </div>
-              <RefreshCw className="w-8 h-8 text-yellow-600 animate-spin" />
+              <div className="w-12 h-12 gradient-purple rounded-full flex items-center justify-center glow-purple">
+                <span className="text-white text-lg font-bold">V</span>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
+        {/* Card Processando */}
+        <Card className="glass-card-dark border-purple-500/20 glow-hover relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-yellow-500/10 opacity-5" />
+          <CardContent className="p-6 relative z-10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Armazenamento</p>
-                <p className="text-3xl font-bold text-[#662d91]">89%</p>
+                <p className="text-sm font-medium text-purple-200">Processando</p>
+                <p className="text-3xl font-bold text-white mt-1">3</p>
               </div>
-              <div className="w-8 h-8 bg-[#662d91] rounded-full" />
+              <div className="p-3 rounded-xl bg-orange-500/10 glass-card">
+                <RefreshCw className="w-8 h-8 text-yellow-400 animate-spin" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card Armazenamento */}
+        <Card className="glass-card-dark border-purple-500/20 glow-hover relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-purple-500/10 opacity-5" />
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-purple-200">Armazenamento</p>
+                <p className="text-3xl font-bold text-white mt-1">89%</p>
+              </div>
+              <div className="relative w-12 h-12">
+                <svg className="w-full h-full" viewBox="0 0 36 36">
+                  <path
+                    className="text-purple-500/20"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="text-purple-400"
+                    strokeDasharray="89, 100"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -165,11 +200,11 @@ export function DatabaseManager() {
         <CardContent>
           <div className="space-y-4">
             {documents.map((doc) => (
-              <div key={doc.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+              <div key={doc.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-600 ">
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-gray-100 rounded-lg">{getFileIcon(doc.type)}</div>
                   <div>
-                    <h4 className="font-medium text-gray-900">{doc.name}</h4>
+                    <h4 className="font-medium text-white">{doc.name}</h4>
                     <p className="text-sm text-gray-500">
                       {doc.size} • {doc.vectors} vetores gerados
                     </p>

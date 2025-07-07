@@ -88,7 +88,7 @@ export function ModernDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-4xl font-bold text-white mb-2">
-                  Bem-vindo ao <span className="gradient-purple bg-clip-text text-transparent">OmniResposta</span>
+                  Bem-vindo ao <span className="gradient-purple bg-clip-text  text-purple-400">OmniResposta</span>
                 </h1>
                 <p className="text-purple-200 text-lg">
                   Seu sistema de atendimento inteligente está funcionando perfeitamente
