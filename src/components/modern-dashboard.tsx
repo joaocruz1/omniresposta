@@ -15,8 +15,12 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts"
+import { useApi } from "@/hooks/use-api"
+import type { DashboardStats } from "@/lib/types"
 
 export function ModernDashboard() {
+  const { data: stats, loading, error } = useApi<DashboardStats>("/api/dashboard/stats")
+
   const todayData = [
     { hour: "00", conversas: 12, resolvidas: 11, satisfacao: 4.2 },
     { hour: "02", conversas: 8, resolvidas: 7, satisfacao: 4.1 },
@@ -39,10 +43,26 @@ export function ModernDashboard() {
     { canal: "Email", conversas: 234, crescimento: 15 },
   ]
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-white">Carregando dados...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-400">Erro ao carregar dados: {error}</div>
+      </div>
+    )
+  }
+
   const metrics = [
     {
       title: "Conversas Hoje",
-      value: "2,847",
+      value: stats?.conversationsToday?.toLocaleString() || "0",
       change: "+12%",
       trend: "up",
       icon: MessageSquare,
@@ -51,7 +71,7 @@ export function ModernDashboard() {
     },
     {
       title: "Taxa de Resolução",
-      value: "94.2%",
+      value: `${stats?.resolutionRate || 0}%`,
       change: "+2.1%",
       trend: "up",
       icon: CheckCircle,
@@ -60,7 +80,7 @@ export function ModernDashboard() {
     },
     {
       title: "Tempo Médio",
-      value: "1.2min",
+      value: stats?.averageTime || "0min",
       change: "-15%",
       trend: "down",
       icon: Clock,
@@ -69,7 +89,7 @@ export function ModernDashboard() {
     },
     {
       title: "Satisfação",
-      value: "4.8/5",
+      value: `${stats?.satisfaction || 0}/5`,
       change: "+0.3",
       trend: "up",
       icon: Star,

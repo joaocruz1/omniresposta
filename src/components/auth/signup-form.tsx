@@ -1,3 +1,5 @@
+// src/components/auth/signup-form.tsx
+
 "use client"
 
 import type React from "react"
@@ -9,7 +11,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Bot, Mail, Lock, User, Building, AlertCircle } from "lucide-react"
-import { signUp } from "@/lib/auth"
+// Remova a importação do signUp, não é mais necessária aqui
+// import { signUp } from "@/lib/auth" 
 import Link from "next/link"
 
 export function SignupForm() {
@@ -42,7 +45,29 @@ export function SignupForm() {
     }
 
     try {
-      await signUp(formData.email, formData.password, formData.companyName, formData.name)
+      // ✅ **AQUI ESTÁ A MUDANÇA PRINCIPAL**
+      // Chame a API em vez da função direta
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          companyName: formData.companyName,
+          name: formData.name,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Se a resposta não for OK, lança um erro com a mensagem da API
+        throw new Error(result.error || 'Erro ao criar conta');
+      }
+      
+      // Se tudo deu certo, redireciona para o dashboard
       router.push("/dashboard")
     } catch (error: any) {
       setError(error.message || "Erro ao criar conta")
@@ -55,6 +80,7 @@ export function SignupForm() {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  // O resto do seu componente continua igual...
   return (
     <div className="min-h-screen flex items-center justify-center gradient-bg p-4">
       <Card className="w-full max-w-md glass-card-dark border-purple-500/20">

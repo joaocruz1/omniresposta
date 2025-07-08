@@ -7,18 +7,14 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Upload, FileText, ImageIcon, Mic, Trash2, Download, Search, Filter, RefreshCw } from "lucide-react"
+import { useApi } from "@/hooks/use-api"
+import type { Document } from "@/lib/types"
 
 export function DatabaseManager() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [isUploading, setIsUploading] = useState(false)
 
-  const documents = [
-    { id: 1, name: "Manual_Atendimento.docx", type: "docx", size: "2.4 MB", status: "Processado", vectors: 1250 },
-    { id: 2, name: "FAQ_Produtos.pdf", type: "pdf", size: "1.8 MB", status: "Processando", vectors: 890 },
-    { id: 3, name: "Fluxo_Vendas.json", type: "json", size: "0.5 MB", status: "Processado", vectors: 340 },
-    { id: 4, name: "Audio_Treinamento.mp3", type: "audio", size: "15.2 MB", status: "Pendente", vectors: 0 },
-    { id: 5, name: "Imagem_Produto.jpg", type: "image", size: "3.1 MB", status: "Processado", vectors: 156 },
-  ]
+  const { data: documents, loading, error, refetch } = useApi<Document[]>("/api/documents")
 
   const handleUpload = () => {
     setIsUploading(true)
@@ -29,6 +25,7 @@ export function DatabaseManager() {
         if (prev >= 100) {
           clearInterval(interval)
           setIsUploading(false)
+          refetch() // Recarregar dados após upload
           return 100
         }
         return prev + 10
@@ -64,6 +61,27 @@ export function DatabaseManager() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-white">Carregando documentos...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-400">Erro ao carregar documentos: {error}</div>
+      </div>
+    )
+  }
+
+  // Calcular estatísticas
+  const totalDocuments = documents?.length || 0
+  const totalVectors = documents?.reduce((sum, doc) => sum + doc.vectors, 0) || 0
+  const processingCount = documents?.filter((doc) => doc.status === "Processando").length || 0
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -75,7 +93,7 @@ export function DatabaseManager() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-purple-200">Total de Documentos</p>
-                <p className="text-3xl font-bold text-white mt-1">1,247</p>
+                <p className="text-3xl font-bold text-white mt-1">{totalDocuments.toLocaleString()}</p>
               </div>
               <div className="p-3 rounded-xl bg-blue-500/10 glass-card">
                 <FileText className="w-8 h-8 text-white" />
@@ -91,7 +109,7 @@ export function DatabaseManager() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-purple-200">Vetores Gerados</p>
-                <p className="text-3xl font-bold text-white mt-1">2,636</p>
+                <p className="text-3xl font-bold text-white mt-1">{totalVectors.toLocaleString()}</p>
               </div>
               <div className="w-12 h-12 gradient-purple rounded-full flex items-center justify-center glow-purple">
                 <span className="text-white text-lg font-bold">V</span>
@@ -107,7 +125,7 @@ export function DatabaseManager() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-purple-200">Processando</p>
-                <p className="text-3xl font-bold text-white mt-1">3</p>
+                <p className="text-3xl font-bold text-white mt-1">{processingCount}</p>
               </div>
               <div className="p-3 rounded-xl bg-orange-500/10 glass-card">
                 <RefreshCw className="w-8 h-8 text-yellow-400 animate-spin" />
@@ -194,12 +212,15 @@ export function DatabaseManager() {
               <Button variant="outline" size="icon">
                 <Filter className="w-4 h-4" />
               </Button>
+              <Button variant="outline" size="icon" onClick={refetch}>
+                <RefreshCw className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {documents.map((doc) => (
+            {documents?.map((doc) => (
               <div key={doc.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-600 ">
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-gray-100 rounded-lg">{getFileIcon(doc.type)}</div>

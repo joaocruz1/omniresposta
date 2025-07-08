@@ -19,6 +19,37 @@ import {
   ResponsiveContainer,
 } from "recharts"
 import { useState, useEffect } from "react"
+import { useApi } from "@/hooks/use-api" // Você usaria seu hook real aqui
+
+// Mock do hook useApi para o exemplo funcionar
+const useApiMock = <T,>(url: string): { data: T | null; loading: boolean; error: Error | null; refetch: () => void } => {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchData = () => {
+    setLoading(true);
+    setError(null);
+    setTimeout(() => {
+      if (url === "/api/system/alerts") {
+        setData([
+          { id: 1, type: "error", message: "Falha na conexão com o banco de dados vetorial.", createdAt: new Date().toISOString() },
+          { id: 2, type: "warning", message: "Uso de CPU acima de 85% no serviço de IA.", createdAt: new Date(Date.now() - 120 * 60 * 1000).toISOString() },
+          { id: 3, type: "success", message: "Backup do sistema concluído com sucesso.", createdAt: new Date(Date.now() - 25 * 60 * 1000).toISOString() },
+        ] as any);
+      }
+      setLoading(false);
+    }, 1000);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [url]);
+
+  return { data, loading, error, refetch: fetchData };
+};
+// Fim do mock
+
 
 export function Monitoring() {
   const [realTimeData, setRealTimeData] = useState([
@@ -29,6 +60,9 @@ export function Monitoring() {
     { time: "14:20", cpu: 71, memoria: 76, rede: 29 },
     { time: "14:25", cpu: 63, memoria: 74, rede: 33 },
   ])
+
+  // Vamos manter a chamada do hook como ela é, pois o componente irá lidar com o estado nulo.
+  const { data: alerts, loading, error, refetch } = useApiMock<any[]>("/api/system/alerts")
 
   // Simular dados em tempo real
   useEffect(() => {
@@ -59,13 +93,6 @@ export function Monitoring() {
     { service: "Cache Redis", status: "Online", uptime: "100%", response: "3ms" },
   ]
 
-  const alerts = [
-    { id: 1, type: "warning", message: "Alto uso de CPU no servidor de IA", time: "5 min atrás" },
-    { id: 2, type: "info", message: "Backup automático concluído", time: "1 hora atrás" },
-    { id: 3, type: "error", message: "Falha temporária na conexão WebSocket", time: "2 horas atrás" },
-    { id: 4, type: "success", message: "Atualização do sistema aplicada", time: "4 horas atrás" },
-  ]
-
   const responseTimeData = [
     { service: "API", tempo: 45 },
     { service: "Banco", tempo: 12 },
@@ -83,7 +110,7 @@ export function Monitoring() {
     { dia: "Sab", uptime: 99.8 },
     { dia: "Dom", uptime: 99.9 },
   ]
-  
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "Online":
@@ -113,13 +140,46 @@ export function Monitoring() {
   const getAlertIcon = (type: string) => {
     switch (type) {
       case "error":
-        return <div className="p-2 rounded-full bg-red-500/10"><AlertTriangle className="w-5 h-5 text-red-400" /></div>
+        return (
+          <div className="p-2 rounded-full bg-red-500/10">
+            <AlertTriangle className="w-5 h-5 text-red-400" />
+          </div>
+        )
       case "warning":
-        return <div className="p-2 rounded-full bg-yellow-500/10"><AlertTriangle className="w-5 h-5 text-yellow-400" /></div>
+        return (
+          <div className="p-2 rounded-full bg-yellow-500/10">
+            <AlertTriangle className="w-5 h-5 text-yellow-400" />
+          </div>
+        )
       case "success":
-        return <div className="p-2 rounded-full bg-green-500/10"><CheckCircle className="w-5 h-5 text-green-400" /></div>
+        return (
+          <div className="p-2 rounded-full bg-green-500/10">
+            <CheckCircle className="w-5 h-5 text-green-400" />
+          </div>
+        )
       default:
-        return <div className="p-2 rounded-full bg-blue-500/10"><Activity className="w-5 h-5 text-blue-400" /></div>
+        return (
+          <div className="p-2 rounded-full bg-blue-500/10">
+            <Activity className="w-5 h-5 text-blue-400" />
+          </div>
+        )
+    }
+  }
+
+  const formatAlertTime = (createdAt: string) => {
+    const now = new Date()
+    const alertTime = new Date(createdAt)
+    const diffInMinutes = Math.floor((now.getTime() - alertTime.getTime()) / (1000 * 60))
+
+    if (diffInMinutes < 1) return "agora mesmo"
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} min atrás`
+    } else if (diffInMinutes < 1440) {
+      const hours = Math.floor(diffInMinutes / 60)
+      return `${hours} hora${hours > 1 ? "s" : ""} atrás`
+    } else {
+      const days = Math.floor(diffInMinutes / 1440)
+      return `${days} dia${days > 1 ? "s" : ""} atrás`
     }
   }
 
@@ -130,14 +190,19 @@ export function Monitoring() {
           <h2 className="text-3xl font-bold text-white">Monitoramento do Sistema</h2>
           <p className="text-purple-200">Status em tempo real dos serviços OmniResposta</p>
         </div>
-        <Button variant="outline" className="text-purple-200 border-purple-500/30 hover:bg-purple-500/10 hover:text-white">
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Atualizar
+        <Button
+          variant="outline"
+          className="text-purple-200 border-purple-500/30 hover:bg-purple-500/10 hover:text-white bg-transparent"
+          onClick={refetch}
+          disabled={loading}
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+          {loading ? "Atualizando..." : "Atualizar"}
         </Button>
       </div>
 
-      {/* Visão Geral do Sistema */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Cards de Visão Geral */}
         <Card className="glass-card-dark border-green-500/20">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -176,7 +241,8 @@ export function Monitoring() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-purple-200">Alertas Ativos</p>
-                <p className="text-2xl font-bold text-yellow-400">2</p>
+                {/* ✅ CORREÇÃO 1: `?.` antes de `length` e `|| 0` para o caso de ser nulo */}
+                <p className="text-2xl font-bold text-yellow-400">{alerts?.length || 0}</p>
               </div>
               <AlertTriangle className="w-8 h-8 text-yellow-400" />
             </div>
@@ -184,7 +250,7 @@ export function Monitoring() {
         </Card>
       </div>
 
-      {/* Performance em Tempo Real */}
+      {/* Gráficos */}
       <Card className="glass-card-dark border-purple-500/20 glow-hover">
         <CardHeader>
           <CardTitle className="text-white">Performance em Tempo Real</CardTitle>
@@ -196,19 +262,26 @@ export function Monitoring() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis dataKey="time" stroke="#9ca3af" />
                 <YAxis stroke="#9ca3af" />
-                <Tooltip contentStyle={{ backgroundColor: "rgba(17, 24, 39, 0.8)", border: "1px solid #4a0e78", borderRadius: "12px", backdropFilter: "blur(10px)" }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "rgba(17, 24, 39, 0.8)",
+                    border: "1px solid #4a0e78",
+                    borderRadius: "12px",
+                    backdropFilter: "blur(10px)",
+                  }}
+                />
                 <Legend />
-                <Line type="monotone" dataKey="cpu" stroke="var(--chart-1)" strokeWidth={2} name="CPU (%)" />
-                <Line type="monotone" dataKey="memoria" stroke="var(--chart-2)" strokeWidth={2} name="Memória (%)" />
-                <Line type="monotone" dataKey="rede" stroke="var(--chart-3)" strokeWidth={2} name="Rede (MB/s)" />
+                <Line type="monotone" dataKey="cpu" stroke="#8b5cf6" strokeWidth={2} name="CPU (%)" dot={false} />
+                <Line type="monotone" dataKey="memoria" stroke="#34d399" strokeWidth={2} name="Memória (%)" dot={false} />
+                <Line type="monotone" dataKey="rede" stroke="#f472b6" strokeWidth={2} name="Rede (MB/s)" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
-
+      
+      {/* (O resto do código dos gráficos permanece o mesmo...) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Tempo de Resposta */}
         <Card className="glass-card-dark border-purple-500/20 glow-hover">
           <CardHeader>
             <CardTitle className="text-white">Tempo de Resposta por Serviço</CardTitle>
@@ -217,10 +290,24 @@ export function Monitoring() {
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={responseTimeData}>
+                  <defs>
+                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                   <XAxis dataKey="service" stroke="#9ca3af" />
                   <YAxis stroke="#9ca3af" />
-                  <Tooltip contentStyle={{ backgroundColor: "rgba(17, 24, 39, 0.8)", border: "1px solid #4a0e78", borderRadius: "12px", backdropFilter: "blur(10px)" }} />
+                  <Tooltip
+                    cursor={{ fill: "rgba(139, 92, 246, 0.1)" }}
+                    contentStyle={{
+                      backgroundColor: "rgba(17, 24, 39, 0.8)",
+                      border: "1px solid #4a0e78",
+                      borderRadius: "12px",
+                      backdropFilter: "blur(10px)",
+                    }}
+                  />
                   <Bar dataKey="tempo" fill="url(#barGradient)" name="Tempo (ms)" />
                 </BarChart>
               </ResponsiveContainer>
@@ -228,7 +315,6 @@ export function Monitoring() {
           </CardContent>
         </Card>
 
-        {/* Uptime Semanal */}
         <Card className="glass-card-dark border-purple-500/20 glow-hover">
           <CardHeader>
             <CardTitle className="text-white">Uptime Semanal</CardTitle>
@@ -237,11 +323,30 @@ export function Monitoring() {
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={uptimeData}>
+                  <defs>
+                    <linearGradient id="resolvidas" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#34d399" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#34d399" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                   <XAxis dataKey="dia" stroke="#9ca3af" />
-                  <YAxis domain={[98, 100]} stroke="#9ca3af" />
-                  <Tooltip contentStyle={{ backgroundColor: "rgba(17, 24, 39, 0.8)", border: "1px solid #4a0e78", borderRadius: "12px", backdropFilter: "blur(10px)" }} />
-                  <Area type="monotone" dataKey="uptime" stroke="var(--chart-2)" fill="url(#resolvidas)" name="Uptime (%)" />
+                  <YAxis domain={[98, 100]} stroke="#9ca3af" unit="%" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(17, 24, 39, 0.8)",
+                      border: "1px solid #4a0e78",
+                      borderRadius: "12px",
+                      backdropFilter: "blur(10px)",
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="uptime"
+                    stroke="#34d399"
+                    fill="url(#resolvidas)"
+                    name="Uptime (%)"
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -249,127 +354,70 @@ export function Monitoring() {
         </Card>
       </div>
 
-      {/* Status dos Serviços */}
-      <Card className="glass-card-dark border-purple-500/20">
-        <CardHeader>
-          <CardTitle className="text-white">Status dos Serviços</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {systemStatus.map((service, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-purple-500/5 border border-purple-500/10 rounded-lg hover:bg-purple-500/10 transition-colors">
-                <div className="flex items-center gap-4">
-                  {getStatusIcon(service.status)}
-                  <div>
-                    <h4 className="font-medium text-white">{service.service}</h4>
-                    <p className="text-sm text-purple-300">Uptime: {service.uptime}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-white">{service.response}</p>
-                    <p className="text-xs text-purple-300">Tempo de resposta</p>
-                  </div>
-                  <Badge className={getStatusColor(service.status)}>{service.status}</Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Alertas */}
-      <Card className="glass-card-dark border-purple-500/20">
-        <CardHeader>
-          <CardTitle className="text-white">Alertas e Notificações</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {alerts.map((alert) => (
-              <div key={alert.id} className="flex items-center gap-4 p-4 bg-purple-500/5 border border-purple-500/10 rounded-lg">
-                {getAlertIcon(alert.type)}
-                <div className="flex-1">
-                  <p className="font-medium text-white">{alert.message}</p>
-                  <p className="text-sm text-purple-300">{alert.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Uso de Recursos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="glass-card-dark border-purple-500/20">
+      {/* Status dos Serviços e Alertas */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <Card className="lg:col-span-3 glass-card-dark border-purple-500/20">
           <CardHeader>
-            <CardTitle className="text-white">Uso de Recursos</CardTitle>
+            <CardTitle className="text-white">Status dos Serviços</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-2 text-purple-200">
-                  <span>CPU</span>
-                  <span className="text-white font-semibold">67%</span>
+            <div className="space-y-3">
+              {systemStatus.map((service, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 bg-purple-500/5 border border-purple-500/10 rounded-lg hover:bg-purple-500/10 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    {getStatusIcon(service.status)}
+                    <div>
+                      <h4 className="font-medium text-white">{service.service}</h4>
+                      <p className="text-sm text-purple-300">Uptime: {service.uptime}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-white">{service.response}</p>
+                      <p className="text-xs text-purple-300">Resp. time</p>
+                    </div>
+                    <Badge className={getStatusColor(service.status)}>{service.status}</Badge>
+                  </div>
                 </div>
-                <div className="w-full bg-purple-500/10 rounded-full h-2.5">
-                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full" style={{ width: "67%" }}></div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-sm mb-2 text-purple-200">
-                  <span>Memória</span>
-                  <span className="text-white font-semibold">45%</span>
-                </div>
-                <div className="w-full bg-purple-500/10 rounded-full h-2.5">
-                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2.5 rounded-full" style={{ width: "45%" }}></div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-sm mb-2 text-purple-200">
-                  <span>Armazenamento</span>
-                  <span className="text-white font-semibold">89%</span>
-                </div>
-                <div className="w-full bg-purple-500/10 rounded-full h-2.5">
-                  <div className="bg-gradient-to-r from-orange-500 to-yellow-500 h-2.5 rounded-full" style={{ width: "89%" }}></div>
-                </div>
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="glass-card-dark border-purple-500/20">
+        <Card className="lg:col-span-2 glass-card-dark border-purple-500/20">
           <CardHeader>
-            <CardTitle className="text-white">Conexões Ativas</CardTitle>
+            <CardTitle className="text-white">Alertas e Notificações</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-purple-200">
-                  <Wifi className="w-5 h-5" />
-                  <span>WebSocket</span>
-                </div>
-                <span className="font-semibold text-white">1,247</span>
+            {loading ? (
+              <div className="text-center text-purple-200 py-10">Carregando alertas...</div>
+            ) : error ? (
+              <div className="text-center text-red-400 py-10">Erro ao carregar alertas.</div>
+            ) : (
+              <div className="space-y-3">
+                {/* ✅ CORREÇÃO 2: `?.` antes de `map` para evitar o erro quando alerts for nulo */}
+                {alerts?.map((alert: any) => (
+                  <div
+                    key={alert.id}
+                    className="flex items-start gap-4 p-4 bg-purple-500/5 border border-purple-500/10 rounded-lg"
+                  >
+                    {getAlertIcon(alert.type)}
+                    <div className="flex-1">
+                      <p className="font-medium text-white text-sm">{alert.message}</p>
+                      <p className="text-xs text-purple-300">{formatAlertTime(alert.createdAt)}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-purple-200">
-                  <Database className="w-5 h-5" />
-                  <span>Banco de Dados</span>
-                </div>
-                <span className="font-semibold text-white">23</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-purple-200">
-                  <Server className="w-5 h-5" />
-                  <span>API Requests</span>
-                </div>
-                <span className="font-semibold text-white">856/min</span>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
+
     </div>
   )
 }

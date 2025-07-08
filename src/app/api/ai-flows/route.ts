@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { getCurrentUser } from "@/lib/auth"
 
 export async function GET() {
   try {
+    const user = await getCurrentUser()
+
+    if (!user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
+    }
+
     const flows = await prisma.aIFlow.findMany({
+      where: {
+        companyId: user.companyId,
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -18,10 +28,19 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser()
+
+    if (!user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
+    }
+
     const body = await request.json()
 
     const flow = await prisma.aIFlow.create({
-      data: body,
+      data: {
+        ...body,
+        companyId: user.companyId,
+      },
     })
 
     return NextResponse.json(flow)
