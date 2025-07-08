@@ -11,33 +11,50 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url)
-    const limit = Number.parseInt(searchParams.get("limit") || "10")
-    const channel = searchParams.get("channel")
-    const status = searchParams.get("status")
+    const metricName = searchParams.get("metric")
+    const timeRange = searchParams.get("timeRange") || "24h"
+
+    // Calcular data de início baseada no timeRange
+    const now = new Date()
+    const startDate = new Date()
+
+    switch (timeRange) {
+      case "1h":
+        startDate.setHours(now.getHours() - 1)
+        break
+      case "24h":
+        startDate.setHours(now.getHours() - 24)
+        break
+      case "7d":
+        startDate.setDate(now.getDate() - 7)
+        break
+      case "30d":
+        startDate.setDate(now.getDate() - 30)
+        break
+    }
 
     const where: any = {
       companyId: user.companyId,
+      recordedAt: {
+        gte: startDate,
+      },
     }
 
-    if (channel) {
-      where.channel = channel
+    if (metricName) {
+      where.metricName = metricName
     }
 
-    if (status) {
-      where.status = status
-    }
-
-    const conversations = await prisma.conversation.findMany({
+    const metrics = await prisma.systemMetric.findMany({
       where,
       orderBy: {
-        createdAt: "desc",
+        recordedAt: "desc",
       },
-      take: limit,
+      take: 100,
     })
 
-    return NextResponse.json(conversations)
+    return NextResponse.json(metrics)
   } catch (error) {
-    console.error("Erro ao buscar conversas:", error)
+    console.error("Erro ao buscar métricas:", error)
     return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 })
   }
 }
@@ -52,16 +69,16 @@ export async function POST(request: Request) {
 
     const body = await request.json()
 
-    const conversation = await prisma.conversation.create({
+    const metric = await prisma.systemMetric.create({
       data: {
         ...body,
         companyId: user.companyId,
       },
     })
 
-    return NextResponse.json(conversation)
+    return NextResponse.json(metric)
   } catch (error) {
-    console.error("Erro ao criar conversa:", error)
+    console.error("Erro ao criar métrica:", error)
     return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 })
   }
 }

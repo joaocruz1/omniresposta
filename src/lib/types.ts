@@ -26,7 +26,7 @@ export interface AnalyticsData {
     category: string
   }>
   recentInteractions: Array<{
-    id: number
+    id: string
     user: string
     query: string
     status: string
@@ -39,4 +39,41 @@ export interface SystemStatus {
   status: "Online" | "Degradado" | "Offline"
   uptime: string
   response: string
+  lastCheck: string
+}
+
+export interface SystemStatusResponse {
+  services: SystemStatus[]
+  systemStats: {
+    totalServices: number
+    onlineServices: number
+    degradedServices: number
+    offlineServices: number
+    averageResponseTime: number
+    overallUptime: number
+  }
+  recentMetrics: SystemMetric[]
+  lastUpdated: string
+}
+
+export interface RealTimeMetrics {
+  cpu: number
+  memory: number
+  network: number
+  storage: number
+}
+
+export interface MonitoringHookReturn {
+  systemStatus: SystemStatusResponse | null
+  alerts: SystemAlert[] | null
+  realTimeMetrics: RealTimeMetrics
+  loading: boolean
+  error: string | null
+  actions: {
+    refetchStatus: () => Promise<void>
+    refetchAlerts: () => Promise<void>
+    createAlert: (type: string, message: string) => Promise<boolean>
+    dismissAlert: (alertId: string) => Promise<boolean>
+    recordMetric: (metricName: string, metricValue: number, metricUnit?: string) => Promise<boolean>
+  }
 }
