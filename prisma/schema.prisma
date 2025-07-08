@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  slug      String   @unique
+  logo      String?
+  plan      String   @default("free") // free, pro, enterprise
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  users            User[]
+  documents        Document[]
+  conversations    Conversation[]
+  aiFlows          AIFlow[]
+  systemMetrics    SystemMetric[]
+  systemAlerts     SystemAlert[]
+  systemSettings   SystemSetting[]
+
+  @@map("companies")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("user") // admin, user, viewer
+  avatar    String?
+  isActive  Boolean  @default(true) @map("is_active")
+  lastLogin DateTime? @map("last_login")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relacionamento com empresa
+  companyId String  @map("company_id")
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("users")
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  name      String
+  type      String
+  size      String
+  status    String   @default("Pendente")
+  vectors   Int      @default(0)
+  filePath  String?  @map("file_path")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relacionamento com empresa
+  companyId String  @map("company_id")
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+model Conversation {
+  id                String   @id @default(cuid())
+  userId            String   @map("user_id")
+  channel           String
+  status            String   @default("Em andamento")
+  query             String
+  response          String?
+  satisfactionScore Float?   @map("satisfaction_score")
+  responseTime      Int?     @map("response_time") // em segundos
+  resolved          Boolean  @default(false)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relacionamento com empresa
+  companyId String  @map("company_id")
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("conversations")
+}
+
+model AIFlow {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  status       String   @default("Rascunho")
+  interactions Int      @default(0)
+  successRate  Float    @default(0) @map("success_rate")
+  flowConfig   Json?    @map("flow_config")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relacionamento com empresa
+  companyId String  @map("company_id")
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("ai_flows")
+}
+
+model SystemMetric {
+  id          String   @id @default(cuid())
+  metricName  String   @map("metric_name")
+  metricValue Float    @map("metric_value")
+  metricUnit  String?  @map("metric_unit")
+  recordedAt  DateTime @default(now()) @map("recorded_at")
+
+  // Relacionamento com empresa
+  companyId String  @map("company_id")
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("system_metrics")
+}
+
+model SystemAlert {
+  id        String   @id @default(cuid())
+  type      String
+  message   String
+  status    String   @default("Ativo")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relacionamento com empresa
+  companyId String  @map("company_id")
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("system_alerts")
+}
+
+model SystemSetting {
+  id           String   @id @default(cuid())
+  settingKey   String   @map("setting_key")
+  settingValue String   @map("setting_value")
+  settingType  String   @default("string") @map("setting_type")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relacionamento com empresa
+  companyId String  @map("company_id")
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, settingKey])
+  @@map("system_settings")
+}
