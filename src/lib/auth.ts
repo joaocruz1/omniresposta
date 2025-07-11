@@ -1,5 +1,6 @@
 import { supabase } from "./supabase"
 import { prisma } from "./prisma"
+import bcrypt from "bcryptjs";
 
 export interface AuthUser {
   id: string
@@ -62,17 +63,28 @@ export async function signUp(email: string, password: string, companyName: strin
 
 export async function signIn(email: string, password: string) {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    // Chamar a nossa nova rota de API
+    const response = await fetch('/api/auth/signin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-    if (error) throw error
+    const data = await response.json();
 
-    return data
+    // Se a resposta da API não for OK (ex: status 401 ou 500), jogue um erro
+    if (!response.ok) {
+      throw new Error(data.error || 'Falha no login');
+    }
+
+    // Retorna os dados do usuário que a API enviou
+    return data;
   } catch (error) {
-    console.error("Erro no signin:", error)
-    throw error
+    console.error("Erro no signIn do cliente:", error);
+    // Propaga o erro para que o formulário possa exibi-lo
+    throw error;
   }
 }
 

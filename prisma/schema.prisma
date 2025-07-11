@@ -37,6 +37,7 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String
+  password    String?  // Armazenará a senha com hash
   role      String   @default("user") // admin, user, viewer
   avatar    String?
   isActive  Boolean  @default(true) @map("is_active")

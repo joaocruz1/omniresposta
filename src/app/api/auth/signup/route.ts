@@ -1,7 +1,7 @@
 // src/app/api/auth/signup/route.ts
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
 import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
 // Função para criar configurações padrão, movida para cá para ser usada localmente.
 async function createDefaultSettings(companyId: string) {
@@ -30,7 +30,7 @@ async function createDefaultSettings(companyId: string) {
       { key: "system_alerts", value: "true", type: "boolean" },
       { key: "performance_reports", value: "true", type: "boolean" },
     ];
-  
+
     await prisma.systemSetting.createMany({
       data: defaultSettings.map((setting) => ({
         companyId,
@@ -44,63 +44,50 @@ async function createDefaultSettings(companyId: string) {
 
 export async function POST(request: Request) {
   try {
-    const { email, password, companyName, name } = await request.json();
+    const { email, password } = await request.json();
 
-    if (!email || !password || !companyName || !name) {
-        return NextResponse.json({ error: "Todos os campos são obrigatórios" }, { status: 400 });
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: "Email e senha são obrigatórios" },
+        { status: 400 }
+      );
     }
 
-    // 1. Criar usuário no Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
+    // 1. Encontrar o usuário no banco de dados
+    const user = await prisma.user.findUnique({
+      where: { email },
     });
 
-    if (authError) {
-        // Retorna um erro mais específico se o usuário já existir
-        if (authError.message.includes("User already registered")) {
-            return NextResponse.json({ error: "Este email já está cadastrado." }, { status: 409 });
-        }
-        throw authError;
+    if (!user || !user.password) {
+      // Usamos uma mensagem genérica para não informar se o email existe ou não
+      return NextResponse.json(
+        { error: "Credenciais inválidas" },
+        { status: 401 } // 401 Unauthorized
+      );
     }
 
-    if (!authData.user) {
-      throw new Error("Erro ao criar usuário no Supabase");
+    // 2. Comparar a senha enviada com a senha criptografada no banco
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { error: "Credenciais inválidas" },
+        { status: 401 }
+      );
     }
+    
+    // 3. Se a senha for válida, retorne os dados do usuário (sem a senha!)
+    const { password: _, ...userWithoutPassword } = user;
 
-    // 2. Criar empresa no banco
-    const company = await prisma.company.create({
-      data: {
-        name: companyName,
-        email,
-        slug: companyName
-          .toLowerCase()
-          .replace(/\s+/g, "-")
-          .replace(/[^a-z0-9-]/g, ""),
-      },
-    });
+    // A partir daqui, você pode gerar um token JWT ou criar uma sessão
+    // Por enquanto, vamos apenas retornar o usuário para confirmar que o login funcionou
+    return NextResponse.json({ user: userWithoutPassword });
 
-    // 3. Criar usuário no banco
-    const user = await prisma.user.create({
-      data: {
-        id: authData.user.id,
-        email,
-        name: name,
-        role: "admin",
-        companyId: company.id,
-      },
-    });
-
-    // 4. Criar configurações padrão da empresa
-    await createDefaultSettings(company.id);
-
-    // Retorna os dados do usuário e da empresa, junto com a sessão do Supabase se necessário
-    return NextResponse.json({ user, company, session: authData.session });
-
-  } catch (error: any) {
-    console.error("Erro na API de signup:", error);
-    // Retorna a mensagem de erro específica se disponível, senão uma genérica
-    const errorMessage = error.error_description || error.message || "Erro interno do servidor";
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  } catch (error) {
+    console.error("Erro na API de signin:", error);
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 }
+    );
   }
 }
