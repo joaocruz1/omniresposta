@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Bot, Mail, Lock, AlertCircle } from "lucide-react"
-import { signIn } from "@/lib/auth"
+import { useAuth } from "@/components/auth/auth-provider"
 import Link from "next/link"
 
 export function LoginForm() {
@@ -18,6 +18,7 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
+  const { refetchUser } = useAuth(); // Obtenha a função para recarregar o usuário
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,8 +26,21 @@ export function LoginForm() {
     setError("")
 
     try {
-      await signIn(email, password)
-      router.push("/dashboard")
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Falha no login');
+      }
+
+      await refetchUser(); // Recarrega os dados do usuário no contexto
+      router.push("/dashboard");
+      router.refresh(); // Força a atualização do layout do servidor
     } catch (error: any) {
       setError(error.message || "Erro ao fazer login")
     } finally {

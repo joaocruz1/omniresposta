@@ -2,8 +2,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
-// Função para criar configurações padrão, movida para cá para ser usada localmente.
+// ... (mantenha sua função createDefaultSettings como está)
 async function createDefaultSettings(companyId: string) {
     const defaultSettings = [
       { key: "ai_model", value: "GPT-4 Turbo", type: "string" },
@@ -44,50 +45,60 @@ async function createDefaultSettings(companyId: string) {
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const { email, password, companyName, name } = await request.json();
 
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: "Email e senha são obrigatórios" },
-        { status: 400 }
-      );
+    if (!email || !password || !companyName || !name) {
+      return NextResponse.json({ error: "Todos os campos são obrigatórios" }, { status: 400 });
     }
 
-    // 1. Encontrar o usuário no banco de dados
-    const user = await prisma.user.findUnique({
-      where: { email },
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return NextResponse.json({ error: "Este email já está em uso" }, { status: 409 });
+    }
+
+    const company = await prisma.company.create({
+      data: {
+        name: companyName,
+        email,
+        slug: companyName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
+      },
     });
 
-    if (!user || !user.password) {
-      // Usamos uma mensagem genérica para não informar se o email existe ou não
-      return NextResponse.json(
-        { error: "Credenciais inválidas" },
-        { status: 401 } // 401 Unauthorized
-      );
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 2. Comparar a senha enviada com a senha criptografada no banco
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+        role: "admin",
+        companyId: company.id,
+      },
+    });
 
-    if (!isPasswordValid) {
-      return NextResponse.json(
-        { error: "Credenciais inválidas" },
-        { status: 401 }
-      );
-    }
-    
-    // 3. Se a senha for válida, retorne os dados do usuário (sem a senha!)
+    await createDefaultSettings(company.id);
+
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, companyId: user.companyId, role: user.role },
+      process.env.JWT_SECRET!,
+      { expiresIn: "7d" }
+    );
+
     const { password: _, ...userWithoutPassword } = user;
+    
+    // ✅ CORREÇÃO: Criar a resposta e então setar o cookie
+    const response = NextResponse.json({ user: userWithoutPassword });
+    response.cookies.set("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 7 dias
+    });
 
-    // A partir daqui, você pode gerar um token JWT ou criar uma sessão
-    // Por enquanto, vamos apenas retornar o usuário para confirmar que o login funcionou
-    return NextResponse.json({ user: userWithoutPassword });
+    return response;
 
   } catch (error) {
-    console.error("Erro na API de signin:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    console.error("Erro na API de signup:", error);
+    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });
   }
 }
